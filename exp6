@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include<stdlib.h>
+typedef struct {
+    int pid;     
+    int bt;      
+    int priority; 
+    int arrival;  
+} Process;
+bool compare_by_priority(const Process* a, const Process* b) {
+    return a->priority > b->priority;
+}
+int main() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    Process processes[n];
+    printf("Enter process IDs, total burst times, priorities, and arrival times:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Process %d: ", i + 1);
+        scanf("%d %d %d %d", &processes[i].pid, &processes[i].bt, &processes[i].priority, &processes[i].arrival);
+    }
+    qsort(processes, n, sizeof(Process), (int (*)(const void*, const void*))compare_by_priority);
+    int current_time = 0;
+    int completed = 0;
+    int running_process = -1;  
+    while (completed < n) {
+        int next_process = -1;
+        for (int i = 0; i < n; i++) {
+            if (processes[i].bt > 0 && processes[i].arrival <= current_time) {
+                if (next_process == -1 || processes[i].priority > processes[next_process].priority) {
+                    next_process = i;
+                }
+            }
+        }
+        if (next_process == -1) {
+            current_time++;
+            continue;
+        }
+        if (running_process != -1 && processes[next_process].priority > processes[running_process].priority) {
+            printf("Process %d pre-empted by process %d at time %d\n",
+                   processes[running_process].pid, processes[next_process].pid, current_time);
+        }
+        if (running_process != next_process) {
+            running_process = next_process;
+            printf("Process %d running at time %d\n", processes[running_process].pid, current_time);
+        }
+        processes[running_process].bt--;
+        current_time++;
+        if (processes[running_process].bt == 0) {
+            completed++;
+            running_process = -1;
+        }
+    }
+    printf("\nScheduling completed.\n");
+    return 0;
+}
