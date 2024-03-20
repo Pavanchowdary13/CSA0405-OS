@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_FRAMES 10
+#define MAX_PAGES 50
+
+int main() {
+    int frames[MAX_FRAMES], pages[MAX_PAGES];
+    int n, m, page_faults = 0;
+
+    printf("Enter the number of frames: ");
+    scanf("%d", &m);
+
+    printf("Enter the number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter the page reference string: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+
+    // Initialize all frames to -1 (indicating no page loaded)
+    for (int i = 0; i < m; i++) {
+        frames[i] = -1;
+    }
+
+    // Optimal page replacement algorithm
+    for (int i = 0; i < n; i++) {
+        bool page_fault = true;
+
+        // Check if page is already in memory
+        for (int j = 0; j < m; j++) {
+            if (frames[j] == pages[i]) {
+                page_fault = false;
+                break;
+            }
+        }
+
+        // If page fault occurs
+        if (page_fault) {
+            int max_future_index = -1;
+            int page_to_replace = -1;
+
+            // Find the page in the frames that will not be used for the longest period in the future
+            for (int j = 0; j < m; j++) {
+                int future_index = -1;
+                for (int k = i + 1; k < n; k++) {
+                    if (frames[j] == pages[k]) {
+                        future_index = k;
+                        break;
+                    }
+                }
+                if (future_index == -1) {
+                    page_to_replace = j;
+                    break;
+                }
+                if (future_index > max_future_index) {
+                    max_future_index = future_index;
+                    page_to_replace = j;
+                }
+            }
+
+            frames[page_to_replace] = pages[i];
+            page_faults++;
+        }
+
+        // Print current page frames
+        printf("Current page frames: ");
+        for (int j = 0; j < m; j++) {
+            if (frames[j] == -1)
+                printf(" - ");
+            else
+                printf(" %d ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("Total Page Faults: %d\n", page_faults);
+
+    return 0;
+}
