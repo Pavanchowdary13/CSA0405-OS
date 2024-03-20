@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 100
+
+// Structure to represent a disk block
+struct DiskBlock {
+    int blockNumber;
+    struct DiskBlock *next;
+};
+
+// Function to initialize the disk blocks
+void initializeDiskBlocks(struct DiskBlock *diskBlocks[], int numBlocks) {
+    for (int i = 0; i < numBlocks; i++) {
+        diskBlocks[i] = NULL;
+    }
+}
+
+// Function to allocate a new block for a file
+void allocateBlock(struct DiskBlock *diskBlocks[], int fileIndex, int blockNumber) {
+    struct DiskBlock *newBlock = (struct DiskBlock *)malloc(sizeof(struct DiskBlock));
+    if (newBlock == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+
+    newBlock->blockNumber = blockNumber;
+    newBlock->next = NULL;
+
+    if (diskBlocks[fileIndex] == NULL) {
+        diskBlocks[fileIndex] = newBlock;
+    } else {
+        struct DiskBlock *currentBlock = diskBlocks[fileIndex];
+        while (currentBlock->next != NULL) {
+            currentBlock = currentBlock->next;
+        }
+        currentBlock->next = newBlock;
+    }
+}
+
+// Function to deallocate all blocks of a file
+void deallocateFile(struct DiskBlock *diskBlocks[], int fileIndex) {
+    struct DiskBlock *currentBlock = diskBlocks[fileIndex];
+    while (currentBlock != NULL) {
+        struct DiskBlock *temp = currentBlock;
+        currentBlock = currentBlock->next;
+        free(temp);
+    }
+    diskBlocks[fileIndex] = NULL;
+}
+
+// Function to display blocks allocated to a file
+void displayFileBlocks(struct DiskBlock *diskBlocks[], int fileIndex) {
+    printf("Blocks allocated to file %d: ", fileIndex);
+    struct DiskBlock *currentBlock = diskBlocks[fileIndex];
+    while (currentBlock != NULL) {
+        printf("%d ", currentBlock->blockNumber);
+        currentBlock = currentBlock->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    struct DiskBlock *diskBlocks[MAX_BLOCKS];
+    int numBlocks, numFiles;
+
+    printf("Enter the number of blocks on the disk: ");
+    scanf("%d", &numBlocks);
+
+    printf("Enter the number of files: ");
+    scanf("%d", &numFiles);
+
+    // Initialize disk blocks
+    initializeDiskBlocks(diskBlocks, numFiles);
+
+    // Simulate file allocation
+    for (int i = 0; i < numFiles; i++) {
+        int numBlocksAllocated;
+        printf("Enter the number of blocks allocated to file %d: ", i);
+        scanf("%d", &numBlocksAllocated);
+
+        printf("Enter the block numbers allocated to file %d: ", i);
+        for (int j = 0; j < numBlocksAllocated; j++) {
+            int blockNumber;
+            scanf("%d", &blockNumber);
+            allocateBlock(diskBlocks, i, blockNumber);
+        }
+    }
+
+    // Display blocks allocated to each file
+    for (int i = 0; i < numFiles; i++) {
+        displayFileBlocks(diskBlocks, i);
+    }
+
+    // Deallocate all blocks of a file (for simulation purposes)
+    int fileIndexToDeallocate;
+    printf("Enter the index of the file to deallocate: ");
+    scanf("%d", &fileIndexToDeallocate);
+    deallocateFile(diskBlocks, fileIndexToDeallocate);
+    displayFileBlocks(diskBlocks, fileIndexToDeallocate);
+
+    return 0;
+}
